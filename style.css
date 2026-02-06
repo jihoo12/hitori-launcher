@@ -1,0 +1,30 @@
+window {
+    background-color: #1e1e2e;
+    border-radius: 12px;
+    border: 1px solid #45475a;
+}
+
+list {
+    background-color: transparent;
+    color: #cdd6f4;
+}
+
+row {
+    padding: 10px;
+    border-radius: 6px;
+    margin: 2px 5px;
+}
+
+row:hover {
+    background-color: #313244;
+}
+
+row:selected {
+    background-color: #89b4fa;
+    color: #11111b;
+}
+
+/* 스크롤바 숨기기 (깔끔함을 위해 선택 사항) */
+scrollbar {
+    opacity: 0;
+}

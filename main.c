@@ -15,7 +15,18 @@ static void launch_app_by_name(const char *app_name, GtkApplication *app) {
     g_list_free_full(apps, g_object_unref);
     g_application_quit(G_APPLICATION(app)); // G_APPLICATION으로 정확히 캐스팅
 }
+static gboolean on_key_pressed(GtkEventControllerKey *controller, 
+                               guint keyval, guint keycode, 
+                               GdkModifierType state, gpointer user_data) {
+    GtkApplication *app = GTK_APPLICATION(user_data);
 
+    // ESC 키가 눌렸는지 확인
+    if (keyval == GDK_KEY_Escape) {
+        g_application_quit(G_APPLICATION(app));
+        return TRUE; // 이벤트 처리 완료
+    }
+    return FALSE; // 다른 키는 기본 동작 수행
+}
 static void on_row_activated(GtkListBox *list_box, GtkListBoxRow *row, gpointer user_data) {
     GtkWidget *box = gtk_list_box_row_get_child(row);
     GtkWidget *label = gtk_widget_get_last_child(box); 
@@ -92,7 +103,10 @@ static void activate(GtkApplication *app, gpointer user_data) {
     GtkWidget *window = gtk_application_window_new(app);
     gtk_layer_init_for_window(GTK_WINDOW(window));
     gtk_layer_set_keyboard_mode(GTK_WINDOW(window), GTK_LAYER_SHELL_KEYBOARD_MODE_EXCLUSIVE);
-
+    GtkEventController *key_controller = gtk_event_controller_key_new();
+    gtk_event_controller_set_propagation_phase(key_controller, GTK_PHASE_CAPTURE);
+    g_signal_connect(key_controller, "key-pressed", G_CALLBACK(on_key_pressed), app);
+    gtk_widget_add_controller(window, key_controller);
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     gtk_widget_set_margin_start(vbox, 15);
     gtk_widget_set_margin_end(vbox, 15);

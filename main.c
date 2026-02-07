@@ -39,26 +39,26 @@ static void on_search_changed(GtkEditable *editable, gpointer user_data) {
     GtkListBox *list_box = GTK_LIST_BOX(user_data);
     const char *text = gtk_editable_get_text(editable);
 
+    // 기존 목록 지우기
     GtkWidget *child;
     while ((child = gtk_widget_get_first_child(GTK_WIDGET(list_box)))) {
         gtk_list_box_remove(list_box, child);
     }
 
-    if (strlen(text) == 0) return;
-
     GList *apps = g_app_info_get_all();
     int count = 0;
+    
     for (GList *l = apps; l != NULL; l = l->next) {
         GAppInfo *app_info = l->data;
         const char *name = g_app_info_get_name(app_info);
 
+        // 검색어가 비어있거나(NULL/empty), 이름에 검색어가 포함된 경우에만 추가
         char *name_lower = g_ascii_strdown(name, -1);
         char *text_lower = g_ascii_strdown(text, -1);
 
-        if (strstr(name_lower, text_lower)) {
+        if (strlen(text) == 0 || strstr(name_lower, text_lower)) {
             GtkWidget *row_content = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
             
-            // 아이콘 추가
             GIcon *icon = g_app_info_get_icon(app_info);
             if (icon) {
                 GtkWidget *icon_img = gtk_image_new_from_gicon(icon);
@@ -76,7 +76,6 @@ static void on_search_changed(GtkEditable *editable, gpointer user_data) {
     }
     g_list_free_full(apps, g_object_unref);
 
-    // 검색 결과가 있으면 첫 번째 항목을 자동으로 선택(포커스)
     if (count > 0) {
         GtkListBoxRow *first_row = gtk_list_box_get_row_at_index(list_box, 0);
         gtk_list_box_select_row(list_box, first_row);
@@ -123,9 +122,9 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     GtkWidget *list_box = gtk_list_box_new();
     gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrolled), list_box);
-
     // 시그널 연결
     g_signal_connect(search_entry, "changed", G_CALLBACK(on_search_changed), list_box);
+    on_search_changed(GTK_EDITABLE(search_entry), list_box);
     g_signal_connect(search_entry, "activate", G_CALLBACK(on_entry_activated), list_box); // 엔터 시 첫 번째 앱 실행
     g_signal_connect(list_box, "row-activated", G_CALLBACK(on_row_activated), app);
 

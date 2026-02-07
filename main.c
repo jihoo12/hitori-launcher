@@ -41,6 +41,19 @@ static GtkWidget* setup_list_row(gpointer item, gpointer user_data) {
     
     return box;
 }
+static void on_entry_activated(GtkEntry *entry, gpointer user_data) {
+    GtkListBox *list_box = GTK_LIST_BOX(user_data);
+    GtkListBoxRow *row = gtk_list_box_get_selected_row(list_box);
+    
+    // 1. 만약 선택된 로우가 없다면, 리스트의 가장 첫 번째 로우를 가져옵니다.
+    if (row == NULL) {
+        row = gtk_list_box_get_row_at_index(list_box, 0);
+    }
+    
+    if (row) {
+        g_signal_emit_by_name(list_box, "row-activated", row);
+    }
+}
 
 // 검색어 변경 시 필터 갱신
 static void on_search_changed(GtkEditable *editable, gpointer user_data) {
@@ -104,7 +117,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
     // 모델을 바인딩하고, 나중에 꺼내 쓸 수 있도록 데이터를 저장해둡니다.
     gtk_list_box_bind_model(GTK_LIST_BOX(list_box), G_LIST_MODEL(filter_model), setup_list_row, NULL, NULL);
     g_object_set_data(G_OBJECT(list_box), "my-model", filter_model);
-
+    g_signal_connect(search_entry, "activate", G_CALLBACK(on_entry_activated), list_box);
     // 이벤트 연결
     g_signal_connect(search_entry, "changed", G_CALLBACK(on_search_changed), filter);
     g_signal_connect(list_box, "row-activated", G_CALLBACK(on_row_activated), app);

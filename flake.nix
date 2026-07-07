@@ -16,6 +16,6 @@
           hitori = pkgs.callPackage ./default.nix { };
         };
       }
-    )
-    };
+    );
 }
+
